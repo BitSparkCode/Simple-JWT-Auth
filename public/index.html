@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Resource</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Protected Resource</h1>
+        <div id="content" class="p-4 bg-white rounded shadow">
+            <p>You need to <a href="/login" class="text-blue-500">login</a> to view this content.</p>
+        </div>
+        <button id="logout" class="bg-red-500 text-white px-4 py-2 mt-4 rounded hidden">Logout</button>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+
+            if (token) {
+                fetch('/protected', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const content = document.getElementById('content');
+                    const logoutButton = document.getElementById('logout');
+                    if (data.message) {
+                        content.innerHTML = `<p class="text-green-500">${data.message}</p>`;
+                        logoutButton.classList.remove('hidden');
+                    } else {
+                        content.innerHTML = '<p class="text-red-500">Access denied. Please <a href="/login" class="text-blue-500">login</a>.</p>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('content').innerHTML = '<p class="text-red-500">Error fetching data. Please <a href="/login" class="text-blue-500">login</a>.</p>';
+                });
+            }
+        });
+
+        document.getElementById('logout').addEventListener('click', function() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>
